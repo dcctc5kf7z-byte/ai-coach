@@ -110,7 +110,14 @@ src/
 | 6 | 主界面 + 任务打卡 | 第14-16天 | ✅ |
 | 7 | AI对话 + 权限控制 | 第17-19天 | ✅ |
 | 8 | 设置 + 账户删除 | 第20天 | ✅ |
-| 9 | 测试 + 部署 | 第21-23天 | 🔜 |
+| 9 | 测试 + 部署 | 第21-23天 | 🔄 |
+
+## 部署信息
+
+- **GitHub**: https://github.com/dcctc5kf7z-byte/ai-coach
+- **Vercel 项目**: ai-coach-v2（KnowFlow Team）
+- **Stripe Webhook URL**: https://ai-coach-ten-chi.vercel.app/api/stripe/webhook
+- **环境变量**: 已配置11个到 Vercel
 
 ## 设计文档
 
