@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 // DeepSeek API 配置
 const DEEPSEEK_API_URL = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com'
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
 
 // 诊断提示词
 const DIAGNOSIS_PROMPTS = {
@@ -46,18 +40,23 @@ const FALLBACK_DIAGNOSIS = {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const body = await request.json()
     const { action, goalId, userMessage, currentRound } = body
 
     switch (action) {
       case 'startDiagnosis':
-        return await startDiagnosis(goalId)
+        return await startDiagnosis(supabase, goalId)
 
       case 'continueDiagnosis':
-        return await continueDiagnosis(goalId, userMessage, currentRound)
+        return await continueDiagnosis(supabase, goalId, userMessage, currentRound)
 
       case 'generatePlan':
-        return await generatePlan(goalId)
+        return await generatePlan(supabase, goalId)
 
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
@@ -71,7 +70,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function startDiagnosis(goalId: string) {
+async function startDiagnosis(supabase: any, goalId: string) {
   // 获取目标信息
   const { data: goal, error } = await supabase
     .from('goals')
@@ -116,6 +115,7 @@ async function startDiagnosis(goalId: string) {
 }
 
 async function continueDiagnosis(
+  supabase: any,
   goalId: string,
   userMessage: string,
   currentRound: number
@@ -168,7 +168,7 @@ async function continueDiagnosis(
   })
 }
 
-async function generatePlan(goalId: string) {
+async function generatePlan(supabase: any, goalId: string) {
   // 获取对话记录
   const { data: conversation } = await supabase
     .from('conversations')
@@ -270,7 +270,8 @@ ${conversation.messages.map((m: { role: string; content: string }) => `${m.role}
 
 // 调用 DeepSeek API
 async function callDeepSeek(messages: { role: string; content: string }[]): Promise<string> {
-  if (!DEEPSEEK_API_KEY) {
+  const apiKey = process.env.DEEPSEEK_API_KEY
+  if (!apiKey) {
     console.warn('DeepSeek API key not configured, using fallback')
     return FALLBACK_DIAGNOSIS.round1
   }
@@ -283,7 +284,7 @@ async function callDeepSeek(messages: { role: string; content: string }[]): Prom
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'deepseek-chat',

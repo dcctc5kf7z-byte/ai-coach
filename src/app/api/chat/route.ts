@@ -2,18 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateChatResponse, type ChatMessage } from '@/lib/ai'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 // 每日对话限制（免费用户）
 const FREE_DAILY_LIMIT = 2
 
 /**
  * 检查用户今日对话次数
  */
-async function getDailyChatCount(userId: string): Promise<number> {
+async function getDailyChatCount(supabase: any, userId: string): Promise<number> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -30,7 +25,7 @@ async function getDailyChatCount(userId: string): Promise<number> {
 /**
  * 获取用户订阅状态
  */
-async function getUserSubscription(userId: string): Promise<{
+async function getUserSubscription(supabase: any, userId: string): Promise<{
   status: string
   trialExpiresAt: string | null
 }> {
@@ -49,7 +44,7 @@ async function getUserSubscription(userId: string): Promise<{
 /**
  * 获取目标的计划和任务上下文
  */
-async function getGoalContext(goalId: string, userId: string): Promise<string> {
+async function getGoalContext(supabase: any, goalId: string, userId: string): Promise<string> {
   // 获取目标信息
   const { data: goal } = await supabase
     .from('goals')
@@ -83,16 +78,16 @@ async function getGoalContext(goalId: string, userId: string): Promise<string> {
   }
 
   if (tasks && tasks.length > 0) {
-    const done = tasks.filter(t => t.status === 'done').length
-    const pending = tasks.filter(t => t.status === 'pending').length
-    const overdue = tasks.filter(t => t.status === 'overdue').length
-    context += `\n任务进度：共${tasks.length}个，完成${done}，待完成${pending}，逾期${overdue}\n`
+    const done = tasks.filter((t: any) => t.status === 'done').length
+    const pending = tasks.filter((t: any) => t.status === 'pending').length
+    const overdue = tasks.filter((t: any) => t.status === 'overdue').length
+    context += '\n任务进度：共' + tasks.length + '个，完成' + done + '，待完成' + pending + '，逾期' + overdue + '\n'
 
     // 列出最近的任务
-    const upcoming = tasks.filter(t => t.status === 'pending').slice(0, 5)
+    const upcoming = tasks.filter((t: any) => t.status === 'pending').slice(0, 5)
     if (upcoming.length > 0) {
       context += '近期任务：\n'
-      upcoming.forEach(t => {
+      upcoming.forEach((t: any) => {
         context += `- ${t.title}（截止：${t.due_date || '未设定'}）\n`
       })
     }
@@ -107,6 +102,11 @@ async function getGoalContext(goalId: string, userId: string): Promise<string> {
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const body = await request.json()
     const { userId, message, goalId, isPlanAdjustment } = body
 
@@ -115,14 +115,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 检查订阅状态
-    const subscription = await getUserSubscription(userId)
+    const subscription = await getUserSubscription(supabase, userId)
     const isPro = subscription.status === 'pro'
     const isTrial = subscription.status === 'trial' &&
       (!subscription.trialExpiresAt || new Date(subscription.trialExpiresAt) > new Date())
 
     // 免费用户检查每日限制
     if (!isPro && !isTrial) {
-      const dailyCount = await getDailyChatCount(userId)
+      const dailyCount = await getDailyChatCount(supabase, userId)
       if (dailyCount >= FREE_DAILY_LIMIT) {
         return NextResponse.json({
           error: 'daily_limit_reached',
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
 
     // 如果有目标上下文
     if (goalId) {
-      const goalContext = await getGoalContext(goalId, userId)
+      const goalContext = await getGoalContext(supabase, goalId, userId)
       if (goalContext) {
         systemPrompt += `\n\n当前讨论的目标背景：\n${goalContext}`
       }
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
     })
 
     // 获取更新后的对话次数
-    const newDailyCount = await getDailyChatCount(userId)
+    const newDailyCount = await getDailyChatCount(supabase, userId)
 
     return NextResponse.json({
       response: aiResponse,
@@ -213,6 +213,11 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
     const limit = parseInt(searchParams.get('limit') || '50')
@@ -234,8 +239,8 @@ export async function GET(request: NextRequest) {
     const sortedMessages = (messages || []).reverse()
 
     // 获取今日对话次数
-    const dailyCount = await getDailyChatCount(userId)
-    const subscription = await getUserSubscription(userId)
+    const dailyCount = await getDailyChatCount(supabase, userId)
+    const subscription = await getUserSubscription(supabase, userId)
     const isPro = subscription.status === 'pro'
     const isTrial = subscription.status === 'trial' &&
       (!subscription.trialExpiresAt || new Date(subscription.trialExpiresAt) > new Date())
