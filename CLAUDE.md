@@ -115,9 +115,10 @@ src/
 ## 部署信息
 
 - **GitHub**: https://github.com/dcctc5kf7z-byte/ai-coach
-- **Vercel 项目**: ai-coach-v2（KnowFlow Team）
-- **Stripe Webhook URL**: https://ai-coach-ten-chi.vercel.app/api/stripe/webhook
-- **环境变量**: 已配置11个到 Vercel（密钥已清理，需从各平台重新获取）
+- **Vercel 项目**: knowflow（KnowFlow Team）
+- **生产域名**: https://knowflow-blond.vercel.app
+- **Stripe Webhook URL**: https://knowflow-blond.vercel.app/api/stripe/webhook
+- **环境变量**: 已配置3个到 Vercel（NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_APP_URL）
 
 ## 安全备忘
 
