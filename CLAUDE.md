@@ -117,7 +117,13 @@ src/
 - **GitHub**: https://github.com/dcctc5kf7z-byte/ai-coach
 - **Vercel 项目**: ai-coach-v2（KnowFlow Team）
 - **Stripe Webhook URL**: https://ai-coach-ten-chi.vercel.app/api/stripe/webhook
-- **环境变量**: 已配置11个到 Vercel
+- **环境变量**: 已配置11个到 Vercel（密钥已清理，需从各平台重新获取）
+
+## 安全备忘
+
+- 所有API密钥已从源码中移除（2026-07-10）
+- `.env.local` 已gitignore，本地开发可用
+- 密钥获取地址：Supabase Dashboard / DeepSeek Platform / Stripe Dashboard
 
 ## 设计文档
 
