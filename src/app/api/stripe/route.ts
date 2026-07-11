@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createAdminClient()
-
 // Stripe 价格 ID（需要在 Stripe Dashboard 中创建）
 const PRICE_IDS = {
   monthly: process.env.STRIPE_PRICE_MONTHLY || 'price_monthly_placeholder',
@@ -87,6 +85,7 @@ async function createCheckout(email: string, priceType: 'monthly' | 'yearly') {
  * 创建 Stripe 客户门户（管理订阅）
  */
 async function createPortal(userId: string) {
+  const supabase = createAdminClient()
   if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_placeholder')) {
     return NextResponse.json({
       url: '/settings',
@@ -125,6 +124,7 @@ async function createPortal(userId: string) {
  * 检查用户订阅状态
  */
 async function checkSubscription(userId: string) {
+  const supabase = createAdminClient()
   const { data: user } = await supabase
     .from('users')
     .select('subscription_status, trial_expires_at, stripe_subscription_id')

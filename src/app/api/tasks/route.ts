@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createAdminClient()
-
 /**
  * GET /api/tasks — 获取当前用户的任务列表
  * 支持 ?status=pending|done|skipped|overdue 筛选
@@ -10,6 +8,8 @@ const supabase = createAdminClient()
  */
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const goalId = searchParams.get('goal_id')
@@ -79,6 +79,8 @@ export async function GET(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const body = await request.json()
     const { id, status, difficulty_rating, feedback_note } = body
 
@@ -133,6 +135,8 @@ export async function PATCH(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const body = await request.json()
     const { plan_id, title, due_date } = body
 

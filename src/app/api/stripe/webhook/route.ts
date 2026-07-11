@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createAdminClient()
-
 // Stripe Webhook 签名密钥
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET
 
@@ -113,6 +111,7 @@ async function verifyWebhookSignature(
  * 用户完成了 Stripe Checkout 支付
  */
 async function handleCheckoutCompleted(session: Record<string, unknown>) {
+  const supabase = createAdminClient()
   const customerId = session.customer as string
   const subscriptionId = session.subscription as string
   const email = (session.customer_details as { email?: string })?.email || session.customer_email as string
@@ -157,6 +156,7 @@ async function handleCheckoutCompleted(session: Record<string, unknown>) {
  * 订阅创建或更新（升级、降级、取消等）
  */
 async function handleSubscriptionUpdate(subscription: Record<string, unknown>) {
+  const supabase = createAdminClient()
   const subscriptionId = subscription.id as string
   const customerId = subscription.customer as string
   const status = subscription.status as string
@@ -208,6 +208,7 @@ async function handleSubscriptionUpdate(subscription: Record<string, unknown>) {
  * 订阅已取消（过了取消期后触发）
  */
 async function handleSubscriptionDeleted(subscription: Record<string, unknown>) {
+  const supabase = createAdminClient()
   const subscriptionId = subscription.id as string
   const customerId = subscription.customer as string
 
@@ -237,6 +238,7 @@ async function handleSubscriptionDeleted(subscription: Record<string, unknown>) 
  * 续费成功
  */
 async function handlePaymentSucceeded(invoice: Record<string, unknown>) {
+  const supabase = createAdminClient()
   const subscriptionId = invoice.subscription as string
   const customerId = invoice.customer as string
 
@@ -271,6 +273,7 @@ async function handlePaymentSucceeded(invoice: Record<string, unknown>) {
  * 续费失败
  */
 async function handlePaymentFailed(invoice: Record<string, unknown>) {
+  const supabase = createAdminClient()
   const subscriptionId = invoice.subscription as string
   const customerId = invoice.customer as string
   const attemptCount = invoice.attempt_count as number
@@ -304,6 +307,7 @@ async function handlePaymentFailed(invoice: Record<string, unknown>) {
  * 通过 Stripe Customer ID 查找用户 ID
  */
 async function findUserIdByCustomerId(customerId: string): Promise<string | null> {
+  const supabase = createAdminClient()
   const { data: user } = await supabase
     .from('users')
     .select('id')

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createAdminClient()
-
 /**
  * GET /api/plans — 获取计划列表或单个计划
  * ?id=xxx — 获取单个计划（含任务）
@@ -10,6 +8,8 @@ const supabase = createAdminClient()
  */
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
     const goalId = searchParams.get('goal_id')
@@ -112,6 +112,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const body = await request.json()
     const { goal_id, content } = body
 
@@ -173,6 +175,8 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const body = await request.json()
     const { id, content } = body
 

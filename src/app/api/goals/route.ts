@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createAdminClient()
-
 /**
  * GET /api/goals — 获取目标列表（含进度计算）
  * 支持 ?status=active|completed|paused 筛选
  */
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
 
@@ -75,6 +75,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createAdminClient()
+
     const body = await request.json()
     const { title, category, description, user_id } = body
 
